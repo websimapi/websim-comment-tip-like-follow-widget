@@ -5,10 +5,6 @@ import DOMPurify from 'dompurify';
 const ctlIcon = document.getElementById('ctl-icon');
 const ctlHeart = document.getElementById('ctl-heart');
 const ctlTipAmount = document.getElementById('ctl-tip-amount');
-const commentsSection = document.getElementById('comments-section');
-const commentsList = document.getElementById('comments-list');
-const commentForm = document.getElementById('comment-form');
-const commentInput = document.getElementById('comment-input');
 
 let project = null;
 let currentUser = null;
@@ -87,97 +83,33 @@ function processUserData(comments, userId) {
 function updateFloatingIcon(totalTips, hasReacted) {
     if (hasReacted) {
         ctlHeart.style.display = 'block';
+    } else {
+        ctlHeart.style.display = 'none';
     }
+
     if (totalTips > 0) {
         ctlTipAmount.textContent = `+${totalTips}`;
         ctlTipAmount.style.display = 'block';
+    } else {
+        ctlTipAmount.style.display = 'none';
     }
-}
-
-// --- UI Rendering ---
-
-/**
- * Renders a single comment object into the DOM.
- * @param {object} comment - The comment object to render.
- */
-function renderComment(comment) {
-    const commentEl = document.createElement('div');
-    commentEl.className = 'comment';
-    commentEl.id = `comment-${comment.id}`;
-
-    const sanitizedContent = DOMPurify.sanitize(marked.parse(comment.raw_content));
-    const commentDate = new Date(comment.created_at).toLocaleString();
-
-    let tipBadge = '';
-    if (comment.card_data?.type === 'tip_comment') {
-        tipBadge = `<span class="tip-badge">Tipped ${comment.card_data.credits_spent} credits</span>`;
-    }
-
-    commentEl.innerHTML = `
-        <div class="comment-header">
-            <span class="comment-author">${comment.author.display_name || comment.author.username}</span>
-            <span class="comment-date">${commentDate}</span>
-            ${tipBadge}
-        </div>
-        <div class="comment-content">${sanitizedContent}</div>
-    `;
-    return commentEl;
-}
-
-/**
- * Renders a list of comments, clearing the previous list.
- * @param {Array} comments - An array of comment objects.
- */
-function renderAllComments(comments) {
-    commentsList.innerHTML = '';
-    if (comments.length === 0) {
-        commentsList.innerHTML = '<p>No comments yet. Be the first!</p>';
-        return;
-    }
-    
-    const topLevelComments = comments.filter(c => !c.parent_comment_id);
-    topLevelComments.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-
-    topLevelComments.forEach(comment => {
-        const commentEl = renderComment(comment);
-        commentsList.appendChild(commentEl);
-    });
 }
 
 // --- Event Handlers ---
 
-function handleIconClick() {
-    commentsSection.scrollIntoView({ behavior: 'smooth' });
-}
-
-async function handleCommentSubmit(event) {
-    event.preventDefault();
-    const content = commentInput.value.trim();
-    if (!content) return;
-
-    const button = event.target.querySelector('button');
-    button.disabled = true;
-    button.textContent = 'Posting...';
-
-    const result = await window.websim.postComment({ content });
-
+async function handleIconClick() {
+    // Open the native comment composition UI
+    const result = await window.websim.postComment({ content: '' });
     if (result && result.error) {
-        console.error('Failed to post comment:', result.error);
-        alert(`Error: ${result.error}`);
-    } else {
-        commentInput.value = '';
+        // This error can happen if the user closes the comment window without posting
+        console.log('Post comment action cancelled or failed:', result.error);
     }
-    
-    button.disabled = false;
-    button.textContent = 'Post';
 }
 
 function handleRealtimeComment(data) {
     console.log('New comment received:', data);
-    const newComment = data.comment;
-    
-    // For simplicity, we'll just refetch and re-render all comments.
-    // A more complex app could insert the comment smartly.
+    // When a new comment is created (even by the current user), refetch all data
+    // to update the icon state (e.g., if it was a tip comment).
     initializeApp();
 }
 
@@ -190,20 +122,17 @@ async function initializeApp() {
         currentUser = await window.websim.getCurrentUser();
 
         if (!project || !currentUser) {
-            commentsList.innerHTML = '<p>Could not load project or user data.</p>';
+            console.error('Could not load project or user data.');
             return;
         }
 
         const allComments = await fetchAllComments(project.id);
-        
-        renderAllComments(allComments);
         
         const { totalTips, hasReacted } = processUserData(allComments, currentUser.id);
         updateFloatingIcon(totalTips, hasReacted);
 
     } catch (error) {
         console.error("Initialization failed:", error);
-        commentsList.innerHTML = '<p>An error occurred while loading comments.</p>';
     }
 }
 
@@ -212,9 +141,7 @@ async function initializeApp() {
 
 document.addEventListener('DOMContentLoaded', () => {
     ctlIcon.addEventListener('click', handleIconClick);
-    commentForm.addEventListener('submit', handleCommentSubmit);
     window.websim.addEventListener('comment:created', handleRealtimeComment);
     
     initializeApp();
 });
-
