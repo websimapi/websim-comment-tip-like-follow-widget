@@ -5,6 +5,7 @@ import DOMPurify from 'dompurify';
 const ctlIcon = document.getElementById('ctl-icon');
 const ctlHeart = document.getElementById('ctl-heart');
 const ctlTipAmount = document.getElementById('ctl-tip-amount');
+const ctlFollowIcon = document.getElementById('ctl-follow-icon');
 
 let project = null;
 let currentUser = null;
@@ -26,6 +27,31 @@ async function hasUserLikedProject(userId, projectId) {
         return data.like !== null;
     } catch (error) {
         console.error("Error checking project like status:", error);
+        return false;
+    }
+}
+
+/**
+ * Checks if the current user is following the project creator.
+ * @param {string} currentUserId 
+ * @param {string} creatorId 
+ * @returns {Promise<boolean>}
+ */
+async function isFollowingCreator(currentUserId, creatorId) {
+    try {
+        const response = await fetch(`/api/v1/users/${currentUserId}/following`);
+        if (!response.ok) {
+            console.error("Failed to fetch following list");
+            return false;
+        }
+        const data = await response.json();
+        if (data.following && data.following.data) {
+            // NOTE: This assumes the following list isn't huge. For production, you'd handle pagination.
+            return data.following.data.some(item => item.follow.user.id === creatorId);
+        }
+        return false;
+    } catch (error) {
+        console.error("Error checking following status:", error);
         return false;
     }
 }
@@ -93,8 +119,9 @@ function processUserTips(comments, userId) {
  * Updates the floating icon's appearance based on user data.
  * @param {number} totalTips - Total credits tipped by the user.
  * @param {boolean} hasReacted - True if the user has liked/reacted to any comment.
+ * @param {boolean} isFollowing - True if the user is following the creator.
  */
-function updateFloatingIcon(totalTips, hasReacted) {
+function updateFloatingIcon(totalTips, hasReacted, isFollowing) {
     if (hasReacted) {
         ctlHeart.style.display = 'block';
     } else {
@@ -106,6 +133,12 @@ function updateFloatingIcon(totalTips, hasReacted) {
         ctlTipAmount.style.display = 'block';
     } else {
         ctlTipAmount.style.display = 'none';
+    }
+
+    if (isFollowing) {
+        ctlFollowIcon.style.display = 'block';
+    } else {
+        ctlFollowIcon.style.display = 'none';
     }
 }
 
@@ -133,19 +166,23 @@ async function initializeApp() {
     try {
         project = await window.websim.getCurrentProject();
         currentUser = await window.websim.getCurrentUser();
+        const creator = await window.websim.getCreator();
 
-        if (!project || !currentUser) {
-            console.error('Could not load project or user data.');
+        if (!project || !currentUser || !creator) {
+            console.error('Could not load project, user, or creator data.');
             return;
         }
 
-        const [allComments, hasLiked] = await Promise.all([
+        const isOwner = currentUser.id === creator.id;
+        
+        const [allComments, hasLiked, isFollowing] = await Promise.all([
             fetchAllComments(project.id),
-            hasUserLikedProject(currentUser.id, project.id)
+            hasUserLikedProject(currentUser.id, project.id),
+            isOwner ? Promise.resolve(true) : isFollowingCreator(currentUser.id, creator.id)
         ]);
         
         const totalTips = processUserTips(allComments, currentUser.id);
-        updateFloatingIcon(totalTips, hasLiked);
+        updateFloatingIcon(totalTips, hasLiked, isFollowing);
 
     } catch (error) {
         console.error("Initialization failed:", error);
