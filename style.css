@@ -53,10 +53,10 @@ body {
 
 .ctl-follow-icon {
     position: absolute;
-    bottom: -8px;
-    right: -8px;
-    width: 20px;
-    height: 20px;
+    bottom: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
     display: none; /* Hidden by default */
     filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
 }
