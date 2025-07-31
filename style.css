@@ -1,0 +1,162 @@
+body {
+    font-family: sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+    padding: 2rem;
+    padding-bottom: 200px; /* Ensure there's space to scroll */
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+h1, h2, h3 {
+    color: #111;
+}
+
+/* Floating Comment-Tip-Like Icon */
+.ctl-icon {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease-in-out;
+}
+
+.ctl-icon:hover {
+    transform: scale(1.1);
+}
+
+.ctl-icon img {
+    width: 32px;
+    height: 32px;
+}
+
+.ctl-heart {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 20px;
+    display: none; /* Hidden by default */
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+}
+
+.ctl-tip-amount {
+    position: absolute;
+    bottom: -5px;
+    left: -10px;
+    background-color: #ffd700;
+    color: #333;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: none; /* Hidden by default */
+}
+
+/* Comments Section */
+#comments-section {
+    max-width: 800px;
+    margin: 3rem auto 0;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.comment {
+    border-bottom: 1px solid #eee;
+    padding: 1rem 0;
+}
+
+.comment:last-child {
+    border-bottom: none;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.comment-author {
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+.comment-date {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.comment-content {
+    color: #444;
+}
+
+.comment-content img {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.tip-badge {
+    background-color: #e0f2fe;
+    color: #0c4a6e;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: auto;
+}
+
+/* Comment Form */
+.comment-form-container {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+#comment-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    min-height: 80px;
+    margin-bottom: 0.5rem;
+    box-sizing: border-box;
+}
+
+#comment-form button {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#comment-form button:hover {
+    background-color: #4338ca;
+}
+
