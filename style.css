@@ -38,8 +38,8 @@ body {
 
 .ctl-tip-amount {
     position: absolute;
-    bottom: -5px;
-    left: -10px;
+    bottom: -10px;
+    left: -15px;
     background-color: #ffd700;
     color: #333;
     font-size: 12px;
