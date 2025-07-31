@@ -9,6 +9,27 @@ const ctlTipAmount = document.getElementById('ctl-tip-amount');
 let project = null;
 let currentUser = null;
 
+/**
+ * Checks if the current user has liked the project.
+ * @param {string} userId
+ * @param {string} projectId
+ * @returns {Promise<boolean>}
+ */
+async function hasUserLikedProject(userId, projectId) {
+    try {
+        const response = await fetch(`/api/v1/users/${userId}/project/${projectId}/like`);
+        if (!response.ok) {
+            console.error("Failed to fetch project like status");
+            return false;
+        }
+        const data = await response.json();
+        return data.like !== null;
+    } catch (error) {
+        console.error("Error checking project like status:", error);
+        return false;
+    }
+}
+
 // --- API & Data Handling ---
 
 /**
@@ -49,31 +70,24 @@ async function fetchAllComments(projectId) {
     return allComments;
 }
 
-
 /**
- * Processes comments to calculate user-specific data for the icon.
+ * Processes comments to calculate user-specific tip data.
  * @param {Array} comments - The list of comments.
  * @param {string} userId - The ID of the current user.
- * @returns {object} An object containing total tips and whether the user has reacted.
+ * @returns {number} The total credits tipped by the user.
  */
-function processUserData(comments, userId) {
+function processUserTips(comments, userId) {
     let totalTips = 0;
-    let hasReacted = false;
 
     for (const comment of comments) {
         // Check for tips from the current user
         if (comment.author.id === userId && comment.card_data?.type === 'tip_comment') {
             totalTips += comment.card_data.credits_spent;
         }
-        // Check if the user has reacted to any comment
-        if (comment.reactions?.some(reaction => reaction.me)) {
-            hasReacted = true;
-        }
     }
 
-    return { totalTips, hasReacted };
+    return totalTips;
 }
-
 
 /**
  * Updates the floating icon's appearance based on user data.
@@ -113,7 +127,6 @@ function handleRealtimeComment(data) {
     initializeApp();
 }
 
-
 // --- Initialization ---
 
 async function initializeApp() {
@@ -126,16 +139,18 @@ async function initializeApp() {
             return;
         }
 
-        const allComments = await fetchAllComments(project.id);
+        const [allComments, hasLiked] = await Promise.all([
+            fetchAllComments(project.id),
+            hasUserLikedProject(currentUser.id, project.id)
+        ]);
         
-        const { totalTips, hasReacted } = processUserData(allComments, currentUser.id);
-        updateFloatingIcon(totalTips, hasReacted);
+        const totalTips = processUserTips(allComments, currentUser.id);
+        updateFloatingIcon(totalTips, hasLiked);
 
     } catch (error) {
         console.error("Initialization failed:", error);
     }
 }
-
 
 // --- Entry Point ---
 
