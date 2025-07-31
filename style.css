@@ -53,16 +53,12 @@ body {
 
 .ctl-follow-icon {
     position: absolute;
-    bottom: -5px;
-    right: -5px;
-    width: 24px;
-    height: 24px;
+    bottom: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
     display: none; /* Hidden by default */
     filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
-    background-color: white;
-    border-radius: 50%;
-    padding: 2px;
-    box-sizing: border-box;
 }
 
 /* Comments Section */
