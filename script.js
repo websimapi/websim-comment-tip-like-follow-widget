@@ -102,7 +102,7 @@ function updateFloatingIcon(totalTips, hasReacted) {
     }
 
     if (totalTips > 0) {
-        ctlTipAmount.textContent = `+${totalTips}`;
+        ctlTipAmount.textContent = `${totalTips}♦`;
         ctlTipAmount.style.display = 'block';
     } else {
         ctlTipAmount.style.display = 'none';
